@@ -54,21 +54,21 @@ export default function Trace() {
 
   if (!ready) return <div className="min-h-screen" />;
   const Side = (
-    <nav className="flex h-full flex-col gap-1 p-3" aria-label="Main">
-      <div className="flex items-center gap-2 px-2 py-3"><Logo /><span className="font-display text-xl tracking-wide">TRACE</span></div>
-      <motion.button {...tap} onClick={() => { setOpen("new"); setNav(false); }} className="mb-3 flex items-center gap-2 rounded-xl bg-acc px-3 py-2 font-medium text-ink"><Plus size={16} />Quick capture<kbd className="ml-auto text-xs opacity-60">N</kbd></motion.button>
+    <nav className="flex h-full flex-col gap-1 p-2 md:items-center" aria-label="Main">
+      <div className="flex items-center gap-2 px-2 py-3"><Logo /><span className="font-display text-lg md:hidden">TRACE</span></div>
+      <motion.button {...tap} title="Quick capture (N)" aria-label="Quick capture" onClick={() => { setOpen("new"); setNav(false); }} className="mb-3 flex items-center gap-2 rounded-sm border border-acc px-3 py-2 text-acc transition-colors hover:bg-acc hover:text-ink md:h-10 md:w-10 md:justify-center md:p-0"><Plus size={16} /><span className="md:hidden">Capture</span></motion.button>
       {NAV.map((n) => (
-        <button key={n.id} onClick={() => go(n.id)} className={`group relative flex items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors ${view === n.id ? "text-fg" : "text-mute hover:text-fg"}`}>
-          {view === n.id && <motion.span layoutId="ind" className="absolute inset-0 rounded-lg border border-line bg-raised" transition={{ type: "spring", stiffness: 500, damping: 40 }} />}
-          <n.icon size={16} className="relative transition-transform group-hover:translate-x-0.5" /><span className="relative">{n.label}</span>
-          {n.id === "trash" && trash.length > 0 && <span className="relative ml-auto text-xs text-mute">{trash.length}</span>}
+        <button key={n.id} title={n.label} aria-label={n.label} onClick={() => go(n.id)} className={`group relative flex items-center gap-3 rounded-sm px-3 py-2 text-left text-sm transition-colors md:h-10 md:w-10 md:justify-center md:p-0 ${view === n.id ? "text-fg" : "text-mute hover:text-fg"}`}>
+          {view === n.id && <motion.span layoutId="ind" className="absolute inset-y-1 -left-0.5 w-0.5 bg-acc" transition={{ type: "spring", stiffness: 500, damping: 40 }} />}
+          <n.icon size={17} /><span className="md:hidden">{n.label}</span>
+          {n.id === "trash" && trash.length > 0 && <span className="h-1.5 w-1.5 rounded-full bg-acc md:absolute md:right-1.5 md:top-1.5" />}
         </button>))}
     </nav>);
 
   return (
     <MotionConfig reducedMotion="user">
       <div className="flex min-h-screen">
-        <aside className="sticky top-0 hidden h-screen w-60 shrink-0 border-r border-line bg-panel md:block">{Side}</aside>
+        <aside className="sticky top-0 hidden h-screen w-14 shrink-0 border-r border-line bg-ink md:block">{Side}</aside>
         <AnimatePresence>{nav && (<><motion.div className="fixed inset-0 z-40 bg-black/50 md:hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setNav(false)} />
           <motion.aside className="fixed inset-y-0 left-0 z-50 w-64 bg-panel md:hidden" initial={{ x: -260 }} animate={{ x: 0 }} exit={{ x: -260 }} transition={{ duration: 0.2 }}>{Side}</motion.aside></>)}</AnimatePresence>
         <div className="min-w-0 flex-1">
@@ -93,7 +93,7 @@ export default function Trace() {
           </main>
         </div>
         <AnimatePresence>{open && <Capture key="cap" item={open === "new" ? null : open} d={d} live={live} onClose={() => setOpen(null)} onSave={(m) => { upsert(m); setOpen(null); }} a={actions} />}</AnimatePresence>
-        <AnimatePresence>{toast && (<motion.div role="status" className="fixed bottom-4 left-1/2 z-[60] flex -translate-x-1/2 items-center gap-3 rounded-xl border border-line bg-raised px-4 py-2 text-sm shadow-xl" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }}>
+        <AnimatePresence>{toast && (<motion.div role="status" className="fixed bottom-4 left-1/2 z-[60] flex -translate-x-1/2 items-center gap-3 rounded-sm border border-line bg-raised px-4 py-2 text-sm shadow-xl" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }}>
           <Check size={14} className="text-acc" />{toast.msg}{toast.undo && <button className="font-medium text-acc" onClick={() => { toast.undo!(); setToast(null); }}>Undo</button>}</motion.div>)}</AnimatePresence>
         {!d.prefs.onboarded && <Onboarding done={() => commit((x) => ({ ...x, prefs: { ...x.prefs, onboarded: true } }))} />}
       </div>
@@ -101,50 +101,53 @@ export default function Trace() {
 }
 
 function Logo() { return (<svg width="26" height="26" viewBox="0 0 32 32" aria-hidden><path d="M5 22 L13 12 L19 18 L27 7" fill="none" stroke="var(--acc)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /><circle cx="5" cy="22" r="2.6" fill="var(--acc)" /><circle cx="13" cy="12" r="2.2" fill="var(--ink)" stroke="var(--acc)" strokeWidth="1.6" /><circle cx="27" cy="7" r="2.6" fill="var(--acc)" /></svg>); }
-const Empty = ({ title, hint, action }: { title: string; hint: string; action?: React.ReactNode }) => (<div className="rounded-2xl border border-dashed border-line p-10 text-center"><p className="font-display text-lg">{title}</p><p className="mx-auto mt-1 max-w-sm text-sm text-mute">{hint}</p>{action && <div className="mt-4">{action}</div>}</div>);
-const H = ({ children, sub }: any) => (<div className="mb-6"><h1 className="font-display text-3xl">{children}</h1>{sub && <p className="mt-1 text-sm text-mute">{sub}</p>}</div>);
+const Empty = ({ title, hint, action }: { title: string; hint: string; action?: React.ReactNode }) => (<div className="rounded-sm border border-dashed border-line p-10 text-center"><p className="font-display text-lg">{title}</p><p className="mx-auto mt-1 max-w-sm text-sm text-mute">{hint}</p>{action && <div className="mt-4">{action}</div>}</div>);
+const H = ({ children, sub }: any) => (<div className="mb-6"><h1 className="font-display text-2xl tracking-tight">{children}</h1>{sub && <p className="mt-1 text-sm text-mute">{sub}</p>}</div>);
 
-function Card({ m, a, d, list, hl }: { m: Memory; a: any; d: Data; list?: boolean; hl?: string }) {
+function Card({ m, a, list, hl }: any) {
   const I = icon(m.type);
-  const mark = (s: string) => { if (!hl) return s; const i = s.toLowerCase().indexOf(hl.toLowerCase()); return i < 0 ? s : <>{s.slice(0, i)}<mark className="rounded bg-acc/30 text-fg">{s.slice(i, i + hl.length)}</mark>{s.slice(i + hl.length)}</>; };
+  const mark = (x: string) => { if (!hl) return x; const i = x.toLowerCase().indexOf(hl.toLowerCase()); return i < 0 ? x : <>{x.slice(0, i)}<mark className="bg-acc/30 text-fg">{x.slice(i, i + hl.length)}</mark>{x.slice(i + hl.length)}</>; };
+  const meta = <span className="flex items-center gap-2 font-mono text-xs text-mute"><I size={12} className="text-acc" />{m.type === "link" ? <span className="text-acc underline decoration-acc/40 underline-offset-2">{m.host}</span> : m.type === "code" ? m.lang || "code" : m.type}<span>·</span>{ago(m.created)}{m.tags.map((t: string) => <span key={t}>#{t}</span>)}</span>;
   return (
-    <motion.article layout initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} whileHover={{ y: -2 }}
-      className={`group relative rounded-2xl border border-line bg-panel p-4 transition-colors hover:border-acc/50 ${list ? "flex items-center gap-4" : ""}`}>
-      <button className="absolute inset-0 rounded-2xl" aria-label={`Open ${m.title}`} onClick={() => a.open(m)} />
-      <div className={`relative flex items-center gap-2 text-xs text-mute ${list ? "w-28 shrink-0" : "mb-2"}`}><I size={14} className="text-acc" />{m.type === "link" ? m.host : m.type === "code" ? m.lang || "code" : m.type}</div>
-      <div className="relative min-w-0 flex-1">
-        <h3 className={`truncate font-medium ${m.type === "quote" ? "font-display italic" : ""}`}>{mark(m.title)}</h3>
-        {(m.body || m.description) && (m.type === "code" ? <pre className="mt-2 max-h-20 overflow-hidden rounded-lg bg-ink p-2 font-mono text-xs text-mute">{m.body}</pre> : <p className={`mt-1 text-sm text-mute ${list ? "truncate" : "line-clamp-3"} ${m.type === "quote" ? "border-l-2 border-acc pl-3" : ""}`}>{mark(m.description || m.body)}</p>)}
-        {!list && <div className="mt-3 flex flex-wrap gap-1">{m.tags.map((t) => <span key={t} className="rounded-full bg-raised px-2 py-0.5 text-xs text-mute">#{t}</span>)}</div>}
-      </div>
-      <div className={`relative flex items-center gap-0.5 ${list ? "" : "mt-3 justify-between"}`}>
-        {!list && <span className="text-xs text-mute">{ago(m.created)}</span>}
-        <div className="flex">
+    <motion.article initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.16 }} className="group relative break-inside-avoid border-b border-line py-4 pl-3 transition-colors hover:bg-raised/40">
+      <button className="absolute inset-0" aria-label={`Open ${m.title}`} onClick={() => a.open(m)} />
+      <div className={`relative ${list ? "flex items-center gap-4" : ""}`}>
+        <div className="min-w-0 flex-1">
+          {m.type === "quote" ? <><blockquote className="border-l border-acc pl-4 font-display text-xl italic leading-snug">“{mark(m.body || m.title)}”</blockquote><p className="mt-2 pl-4 text-sm text-mute">{m.body ? mark(m.title) : ""}</p></>
+            : <><h3 className="truncate font-display text-lg leading-tight">{mark(m.title)}</h3>
+              {m.type === "code" ? <pre className="mt-2 max-h-24 overflow-hidden border-l border-acc bg-raised/60 p-2 font-mono text-xs text-mute">{m.body}</pre> : (m.description || m.body) && <p className={`mt-1 text-sm text-mute ${list ? "truncate" : "line-clamp-2"}`}>{mark(m.description || m.body)}</p>}</>}
+          <div className="mt-2">{meta}</div>
+        </div>
+        <div className="flex items-center md:opacity-0 md:transition-opacity md:group-focus-within:opacity-100 md:group-hover:opacity-100">
           <Ib label={m.fav ? "Remove favourite" : "Favourite"} onClick={() => a.fav(m)}><Star size={15} className={m.fav ? "fill-acc text-acc" : ""} /></Ib>
           <Ib label="Copy" onClick={() => a.copy(m)}><Copy size={15} /></Ib><Ib label="Duplicate" onClick={() => a.dup(m)}><LayoutGrid size={15} /></Ib>
-          <Ib label="Move to Trash" onClick={() => a.remove(m)}><Trash2 size={15} /></Ib></div></div>
+          <Ib label="Move to Trash" onClick={() => a.remove(m)}><Trash2 size={15} /></Ib></div>
+      </div>
     </motion.article>);
 }
 const Ib = ({ label, onClick, children }: any) => (<motion.button {...tap} whileHover={{ scale: 1.1 }} aria-label={label} title={label} onClick={onClick} className="rounded-lg p-1.5 text-mute transition-colors hover:bg-raised hover:text-fg">{children}</motion.button>);
-const Grid = ({ items, a, d, list, hl }: any) => (<motion.div layout className={list ? "grid gap-2" : "grid gap-3 sm:grid-cols-2 xl:grid-cols-3"}><AnimatePresence>{items.map((m: Memory) => <Card key={m.id} m={m} a={a} d={d} list={list} hl={hl} />)}</AnimatePresence></motion.div>);
+const Grid = ({ items, a, d, list, hl }: any) => (<div className={list ? "" : "md:columns-2 md:gap-10"}><AnimatePresence initial={false}>{items.map((m: Memory) => <Card key={m.id} m={m} a={a} list={list} hl={hl} />)}</AnimatePresence></div>);
 
 function Overview({ live, d, a, go, quick }: any) {
   const [t, setT] = useState("");
   const week = Date.now() - 7 * 864e5;
-  const days = Array.from({ length: 14 }, (_, i) => { const s = new Date(); s.setHours(0, 0, 0, 0); s.setDate(s.getDate() - (13 - i)); const st = s.getTime(); return live.filter((m: Memory) => m.created >= st && m.created < st + 864e5).length; });
-  const max = Math.max(1, ...days);
-  const stats = [["Memories", live.length], ["Collections", d.collections.length], ["Favourites", live.filter((m: Memory) => m.fav).length], ["Added this week", live.filter((m: Memory) => m.created > week).length]];
-  const recent = [...live].sort((x: Memory, y: Memory) => y.created - x.created).slice(0, 6);
-  return (<div className="mx-auto max-w-5xl">
-    <H sub="Never lose an idea again.">Your ideas, all connected.</H>
-    <form onSubmit={(e) => { e.preventDefault(); if (t.trim()) { quick(t.trim()); setT(""); } }} className="mb-6 flex gap-2"><input value={t} onChange={(e) => setT(e.target.value)} aria-label="Quick capture" placeholder="Paste a link, or write a thought" className="field" /><motion.button {...tap} whileHover={{ y: -1 }} className="rounded-xl bg-acc px-4 font-medium text-ink">Save</motion.button></form>
-    <div className="mb-8 grid grid-cols-2 gap-3 md:grid-cols-4">{stats.map(([l, n]) => <div key={l as string} className="rounded-2xl border border-line bg-panel p-4"><div className="font-display text-3xl">{n}</div><div className="text-sm text-mute">{l}</div></div>)}</div>
-    <section className="mb-8 rounded-2xl border border-line bg-panel p-4"><h2 className="mb-3 text-sm text-mute">Captured in the last 14 days</h2>
-      {live.length === 0 ? <p className="text-sm text-mute">Activity will appear here as you save memories.</p> : <div className="flex h-24 items-end gap-1.5">{days.map((n, i) => <motion.div key={i} title={`${n} saved`} className="flex-1 rounded-t bg-acc/70" initial={{ height: 0 }} animate={{ height: `${(n / max) * 100 || 3}%` }} />)}</div>}</section>
-    <h2 className="mb-3 font-display text-xl">Recently captured</h2>
-    {recent.length ? <Grid items={recent} a={a} d={d} /> : <Empty title="Nothing saved yet" hint="Press N or use the box above to capture your first link, note, quote, or snippet." action={<button onClick={() => a.open("new")} className="rounded-xl bg-acc px-4 py-2 font-medium text-ink">Capture something</button>} />}
-    {live.length > 1 && <p className="mt-6 text-sm text-mute">Explore connections in the <button className="text-acc underline" onClick={() => go("graph")}>knowledge graph</button>.</p>}
-  </div>);
+  const recent = useMemo(() => [...live].sort((x: Memory, y: Memory) => y.created - x.created).slice(0, 6), [live]);
+  const edges = useMemo(() => { const e: number[][] = []; for (let i = 0; i < live.length; i++) for (let j = i + 1; j < live.length; j++) if (related(live[i], [live[j]]).length) e.push([i, j]); return e; }, [live]);
+  const pos = (i: number) => { const g = (i / live.length) * Math.PI * 2; return [50 + 38 * Math.cos(g), 50 + 38 * Math.sin(g)]; };
+  const counts = TYPES.map((x) => ({ ...x, n: live.filter((m: Memory) => m.type === x.id).length }));
+  const top = Math.max(1, ...counts.map((c) => c.n));
+  return (<div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1fr_15rem]">
+    <div>
+      <p className="font-mono text-xs text-mute">{live.length} kept · {d.collections.length} collections · {live.filter((m: Memory) => m.fav).length} starred · {live.filter((m: Memory) => m.created > week).length} this week</p>
+      <form onSubmit={(e) => { e.preventDefault(); if (t.trim()) { quick(t.trim()); setT(""); } }} className="mt-3 flex items-end gap-3"><input value={t} onChange={(e) => setT(e.target.value)} aria-label="Quick capture" placeholder="Paste a link or write a thought…" className="field font-display text-2xl" /><motion.button {...tap} className="pb-2 text-sm text-acc">Keep</motion.button></form>
+      <h2 className="mb-1 mt-8 text-sm text-mute">Latest</h2>
+      {recent.length ? <Grid items={recent} a={a} d={d} /> : <Empty title="The archive is empty" hint="Press N, or type above. Links, notes, quotes and snippets all belong here." />}
+    </div>
+    <aside className="space-y-8 lg:pt-6">
+      <section><h2 className="mb-2 text-sm text-mute">Kinds of memory</h2>{counts.map((c) => <div key={c.id} className="flex items-center gap-2 py-1 text-sm"><c.icon size={13} className="text-acc" /><span className="w-16 text-mute">{c.label}</span><div className="h-px flex-1 bg-line"><motion.div className="h-px bg-acc" initial={false} animate={{ width: `${(c.n / top) * 100}%` }} /></div><span className="font-mono text-xs">{c.n}</span></div>)}</section>
+      <section><h2 className="mb-2 text-sm text-mute">Threads</h2>
+        {live.length > 1 ? <button onClick={() => go("graph")} className="block w-full text-left" aria-label="Open knowledge graph"><svg viewBox="0 0 100 100" className="w-full">{edges.map(([i, j], k) => { const [x1, y1] = pos(i), [x2, y2] = pos(j); return <line key={k} x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--acc)" strokeWidth={0.4} opacity={0.6} />; })}{live.map((m: Memory, i: number) => { const [x, y] = pos(i); return <circle key={m.id} cx={x} cy={y} r={1.8} fill="var(--ink)" stroke="var(--acc)" strokeWidth={0.6} />; })}</svg><p className="font-mono text-xs text-mute">{edges.length} {edges.length === 1 ? "connection" : "connections"}. Open graph</p></button> : <p className="text-sm text-mute">Connections appear once you keep two or more memories.</p>}</section>
+    </aside></div>);
 }
 
 function Lib({ live, d, q, setQ, a }: any) {
@@ -160,7 +163,7 @@ function Lib({ live, d, q, setQ, a }: any) {
       <select aria-label="Collection" value={col} onChange={(e) => setCol(e.target.value)} className="field !w-auto"><option value="all">Any collection</option>{d.collections.map((c: Collection) => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
       <select aria-label="Sort" value={sort} onChange={(e) => setSort(e.target.value)} className="field !w-auto"><option value="new">Newest</option><option value="old">Oldest</option><option value="az">A–Z</option></select>
       <div className="ml-auto flex"><Ib label="Grid view" onClick={() => setList(false)}><LayoutGrid size={16} /></Ib><Ib label="List view" onClick={() => setList(true)}><List size={16} /></Ib></div></div>
-    {items.length ? <Grid items={items} a={a} d={d} list={list} hl={dq} /> : <Empty title={live.length ? "No matches" : "Your library is empty"} hint={live.length ? "Try different words or clear the filters." : "Capture your first memory to start building your archive."} action={live.length ? <button className="text-acc underline" onClick={() => { setQ(""); setType("all"); setCol("all"); setFav(false); }}>Clear filters</button> : <button onClick={() => a.open("new")} className="rounded-xl bg-acc px-4 py-2 font-medium text-ink">Capture</button>} />}</div>);
+    {items.length ? <Grid items={items} a={a} d={d} list={list} hl={dq} /> : <Empty title={live.length ? "No matches" : "Your library is empty"} hint={live.length ? "Try different words or clear the filters." : "Capture your first memory to start building your archive."} action={live.length ? <button className="text-acc underline" onClick={() => { setQ(""); setType("all"); setCol("all"); setFav(false); }}>Clear filters</button> : <button onClick={() => a.open("new")} className="rounded-sm bg-acc px-4 py-2 font-medium text-ink">Capture</button>} />}</div>);
 }
 
 function Cols({ d, live, commit, open, setOpen, a, patch }: any) {
@@ -175,32 +178,38 @@ function Cols({ d, live, commit, open, setOpen, a, patch }: any) {
       {others.length > 0 && <select aria-label="Add memory" className="field mb-4 !w-auto" value="" onChange={(e) => { const m = live.find((x: Memory) => x.id === e.target.value); if (m) patch(m.id, { collectionIds: [...m.collectionIds, cur.id] }); }}><option value="">Add a memory…</option>{others.map((m: Memory) => <option key={m.id} value={m.id}>{m.title}</option>)}</select>}
       {items.length ? <Grid items={items} a={a} d={d} /> : <Empty title="This collection is empty" hint="Add existing memories above, or assign a collection while capturing." />}
       {items.length > 0 && <div className="mt-4 flex flex-wrap gap-2">{items.map((m: Memory) => <button key={m.id} className="rounded-full border border-line px-3 py-1 text-xs text-mute hover:text-fg" onClick={() => patch(m.id, { collectionIds: m.collectionIds.filter((i) => i !== cur.id) })}>Remove {m.title.slice(0, 24)}</button>)}</div>}</div>); }
-  return (<div className="mx-auto max-w-5xl"><div className="flex items-start justify-between"><H sub="Group memories by project, topic, or mood.">Collections</H><motion.button {...tap} onClick={() => begin("new")} className="rounded-xl bg-acc px-4 py-2 font-medium text-ink">New collection</motion.button></div>
-    <AnimatePresence>{edit && <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="mb-4 overflow-hidden"><div className="grid gap-2 rounded-2xl border border-line bg-panel p-4"><input autoFocus className="field" placeholder="Name" aria-label="Name" value={name} onChange={(e) => setName(e.target.value)} /><input className="field" placeholder="Description" aria-label="Description" value={desc} onChange={(e) => setDesc(e.target.value)} />
+  return (<div className="mx-auto max-w-5xl"><div className="flex items-start justify-between"><H sub="Group memories by project, topic, or mood.">Collections</H><motion.button {...tap} onClick={() => begin("new")} className="rounded-sm bg-acc px-4 py-2 font-medium text-ink">New collection</motion.button></div>
+    <AnimatePresence>{edit && <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="mb-4 overflow-hidden"><div className="grid gap-2 rounded-sm border border-line bg-panel p-4"><input autoFocus className="field" placeholder="Name" aria-label="Name" value={name} onChange={(e) => setName(e.target.value)} /><input className="field" placeholder="Description" aria-label="Description" value={desc} onChange={(e) => setDesc(e.target.value)} />
       <div className="flex items-center gap-2">{COLORS.map((c) => <button key={c} aria-label={`Colour ${c}`} onClick={() => setColor(c)} style={{ background: c }} className={`h-6 w-6 rounded-full ${color === c ? "ring-2 ring-fg ring-offset-2 ring-offset-panel" : ""}`} />)}<span className="flex-1" /><button onClick={() => setEdit(null)} className="text-sm text-mute">Cancel</button><button onClick={saveC} className="rounded-lg bg-acc px-3 py-1.5 text-sm font-medium text-ink">Save</button></div></div></motion.div>}</AnimatePresence>
-    {d.collections.length ? <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{d.collections.map((c: Collection) => { const it = cnt(c); const last = it.sort((x: Memory, y: Memory) => y.updated - x.updated)[0];
-      return (<motion.div layout key={c.id} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} whileHover={{ y: -2 }} className="rounded-2xl border border-line bg-panel p-4 transition-colors hover:border-acc/50" style={{ borderTop: `3px solid ${c.color}` }}>
+    {d.collections.length ? <div className="divide-y divide-line border-y border-line">{d.collections.map((c: Collection) => { const it = cnt(c); const last = it.sort((x: Memory, y: Memory) => y.updated - x.updated)[0];
+      return (<motion.div layout key={c.id} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} whileHover={{ y: -2 }} className="py-4 pl-4 transition-colors hover:bg-raised/40" style={{ borderLeft: `2px solid ${c.color}` }}>
         <button className="block w-full text-left" onClick={() => setOpen(c.id)}><h3 className="font-display text-lg">{c.name}</h3><p className="text-sm text-mute">{c.description || "No description"}</p><p className="mt-3 text-xs text-mute">{it.length} {it.length === 1 ? "memory" : "memories"}{last ? ` · active ${ago(last.updated)}` : ""}</p></button>
         <div className="mt-2 flex"><button className="mr-3 text-xs text-mute hover:text-fg" onClick={() => begin(c)}>Edit</button><button className="mr-3 text-xs text-mute hover:text-fg" onClick={() => { const now = Date.now(); commit((x: Data) => ({ ...x, collections: [...x.collections, { ...c, id: uid(), name: c.name + " (copy)", created: now, updated: now }] })); }}>Duplicate</button><button className="text-xs text-mute hover:text-fg" onClick={() => del(c)}>Delete</button></div></motion.div>); })}</div>
       : <Empty title="No collections yet" hint="Create one to group related memories." />}</div>);
 }
 
+const Shape = ({ t, x, y, r, on }: any) => { const p = { fill: on ? "var(--acc)" : "var(--ink)", stroke: "var(--acc)", strokeWidth: 0.35, style: { transition: "all .15s" } };
+  if (t === "note") return <rect x={x - r} y={y - r} width={r * 2} height={r * 2} {...p} />;
+  if (t === "quote") return <polygon points={`${x},${y - r * 1.3} ${x + r * 1.3},${y} ${x},${y + r * 1.3} ${x - r * 1.3},${y}`} {...p} />;
+  if (t === "code") return <polygon points={`${x},${y - r * 1.3} ${x + r * 1.2},${y + r} ${x - r * 1.2},${y + r}`} {...p} />;
+  if (t === "reference") return <><circle cx={x} cy={y} r={r + 0.9} fill="none" stroke="var(--acc)" strokeWidth={0.2} /><circle cx={x} cy={y} r={r * 0.6} {...p} /></>;
+  return <circle cx={x} cy={y} r={r} {...p} />; };
 function Graph({ live, a }: any) {
   const [sel, setSel] = useState<Memory | null>(null); const [hov, setHov] = useState<string | null>(null); const [zoom, setZoom] = useState(1); const [showList, setShowList] = useState(false);
   const { nodes, edges } = useMemo(() => { const n = live.map((m: Memory, i: number) => { const ang = (i / Math.max(1, live.length)) * Math.PI * 2; const r = live.length > 1 ? 34 : 0; return { m, x: 50 + r * Math.cos(ang), y: 50 + r * Math.sin(ang) }; });
     const e: { a: any; b: any; why: string }[] = []; for (let i = 0; i < n.length; i++) for (let j = i + 1; j < n.length; j++) { const r = related(n[i].m, [n[j].m]); if (r.length) e.push({ a: n[i], b: n[j], why: r[0].why.join(" ") }); } return { nodes: n, edges: e }; }, [live]);
   const rel = sel ? related(sel, live).slice(0, 5) : [];
-  if (!live.length) return <div className="mx-auto max-w-5xl"><H>Knowledge graph</H><Empty title="Nothing to connect yet" hint="Save a few memories and give them shared tags or collections. Connections appear automatically." /></div>;
+  if (live.length < 2) return <div className="mx-auto max-w-5xl"><H>Knowledge graph</H><Empty title="A constellation needs at least two stars" hint="Save a couple of memories and give them shared tags or collections. Connections appear automatically." /></div>;
   return (<div className="mx-auto max-w-5xl"><H sub={edges.length ? `${nodes.length} nodes, ${edges.length} connections from tags, collections, sites, and title keywords.` : "No connections yet. Add shared tags to related items to link them."}>Knowledge graph</H>
     <div className="mb-3 flex gap-2"><button className="rounded-lg border border-line px-3 py-1 text-sm" onClick={() => setZoom((z) => Math.min(2.2, z + 0.3))}>Zoom in</button><button className="rounded-lg border border-line px-3 py-1 text-sm" onClick={() => setZoom((z) => Math.max(0.6, z - 0.3))}>Zoom out</button><button className="rounded-lg border border-line px-3 py-1 text-sm" onClick={() => { setZoom(1); setSel(null); }}>Reset</button><button className="ml-auto rounded-lg border border-line px-3 py-1 text-sm" onClick={() => setShowList(!showList)}>{showList ? "Show graph" : "Show as list"}</button></div>
     {showList ? <Grid items={live} a={a} d={{ collections: [], prefs: {} }} list /> :
-    <div className="grid gap-3 md:grid-cols-[1fr_16rem]"><div className="overflow-auto rounded-2xl border border-line" style={{ background: "radial-gradient(circle at 50% 40%, var(--raised), var(--ink))" }}>
+    <div className="grid gap-3 md:grid-cols-[1fr_16rem]"><div className="overflow-auto border border-line" style={{ backgroundImage: "radial-gradient(var(--line) 0.6px, transparent 0.6px)", backgroundSize: "14px 14px" }}>
       <svg viewBox="0 0 100 100" className="mx-auto aspect-square w-full" style={{ transform: `scale(${zoom})`, transition: "transform .2s" }} role="img" aria-label="Knowledge graph">
-        {edges.map((e, i) => <line key={i} x1={e.a.x} y1={e.a.y} x2={e.b.x} y2={e.b.y} stroke="var(--acc)" strokeWidth={0.25} opacity={hov && ![e.a.m.id, e.b.m.id].includes(hov) ? 0.08 : 0.5} />)}
+        {edges.map((e, i) => <line key={i} x1={e.a.x} y1={e.a.y} x2={e.b.x} y2={e.b.y} stroke="var(--acc)" strokeWidth={0.12} opacity={hov && ![e.a.m.id, e.b.m.id].includes(hov) ? 0.08 : 0.5} />)}
         {nodes.map((n: any) => <g key={n.m.id} tabIndex={0} role="button" aria-label={n.m.title} style={{ cursor: "pointer" }} onClick={() => setSel(n.m)} onKeyDown={(e) => e.key === "Enter" && setSel(n.m)} onMouseEnter={() => setHov(n.m.id)} onMouseLeave={() => setHov(null)}>
-          <motion.circle cx={n.x} cy={n.y} animate={{ r: sel?.id === n.m.id ? 3.2 : hov === n.m.id ? 2.6 : 2 }} fill={n.m.type === "link" ? "var(--acc)" : "var(--panel)"} stroke="var(--acc)" strokeWidth={0.5} />
-          <text x={n.x} y={n.y + 5} textAnchor="middle" fontSize="2.2" fill="var(--fg)">{n.m.title.slice(0, 18)}</text></g>)}</svg></div>
-      <aside className="rounded-2xl border border-line bg-panel p-4 text-sm">{sel ? <><h3 className="font-display text-lg">{sel.title}</h3><p className="text-mute">{sel.type}{sel.host ? ` · ${sel.host}` : ""}</p><button className="mt-3 rounded-lg bg-acc px-3 py-1.5 font-medium text-ink" onClick={() => a.open(sel)}>Open memory</button>
+          <Shape t={n.m.type} x={n.x} y={n.y} r={sel?.id === n.m.id ? 2.8 : hov === n.m.id ? 2.4 : 1.8} on={sel?.id === n.m.id} />
+          <text x={n.x} y={n.y + 5} textAnchor="middle" fontSize="1.8" fill="var(--mute)">{n.m.title.slice(0, 18)}</text></g>)}</svg></div>
+      <aside className="rounded-sm border border-line bg-panel p-4 text-sm">{sel ? <><h3 className="font-display text-lg">{sel.title}</h3><p className="text-mute">{sel.type}{sel.host ? ` · ${sel.host}` : ""}</p><button className="mt-3 rounded-lg bg-acc px-3 py-1.5 font-medium text-ink" onClick={() => a.open(sel)}>Open memory</button>
         <h4 className="mt-4 text-mute">Connected to</h4>{rel.length ? rel.map((r) => <p key={r.m.id} className="mt-1"><button className="text-acc" onClick={() => setSel(r.m)}>{r.m.title}</button><span className="block text-xs text-mute">{r.why.join(" ")}</span></p>) : <p className="text-mute">No connections yet. Try adding tags.</p>}</> : <p className="text-mute">Select a node to see its details.</p>}</aside></div>}</div>);
 }
 
@@ -208,14 +217,14 @@ function TrashView({ trash, commit }: any) {
   const restore = (id: string) => commit((x: Data) => ({ ...x, memories: x.memories.map((m) => m.id === id ? { ...m, deleted: undefined } : m) }));
   const purge = (id: string) => commit((x: Data) => ({ ...x, memories: x.memories.filter((m) => m.id !== id) }));
   return (<div className="mx-auto max-w-3xl"><div className="flex items-start justify-between"><H sub="Deleted items stay here until you remove them.">Trash</H>{trash.length > 0 && <button className="text-sm text-mute hover:text-fg" onClick={() => confirm("Permanently delete everything in Trash?") && commit((x: Data) => ({ ...x, memories: x.memories.filter((m) => !m.deleted) }))}>Empty Trash</button>}</div>
-    {trash.length ? <div className="grid gap-2"><AnimatePresence>{trash.map((m: Memory) => <motion.div layout key={m.id} exit={{ opacity: 0, x: 20 }} className="flex items-center gap-3 rounded-xl border border-line bg-panel p-3"><div className="min-w-0 flex-1"><p className="truncate">{m.title}</p><p className="text-xs text-mute">Deleted {new Date(m.deleted!).toLocaleDateString()}</p></div><Ib label="Restore" onClick={() => restore(m.id)}><RotateCcw size={16} /></Ib><Ib label="Delete permanently" onClick={() => confirm("Delete this permanently?") && purge(m.id)}><X size={16} /></Ib></motion.div>)}</AnimatePresence></div> : <Empty title="Trash is empty" hint="Items you delete show up here so you can restore them." />}</div>);
+    {trash.length ? <div className="grid gap-2"><AnimatePresence>{trash.map((m: Memory) => <motion.div layout key={m.id} exit={{ opacity: 0, x: 20 }} className="flex items-center gap-3 rounded-sm border border-line bg-panel p-3"><div className="min-w-0 flex-1"><p className="truncate">{m.title}</p><p className="text-xs text-mute">Deleted {new Date(m.deleted!).toLocaleDateString()}</p></div><Ib label="Restore" onClick={() => restore(m.id)}><RotateCcw size={16} /></Ib><Ib label="Delete permanently" onClick={() => confirm("Delete this permanently?") && purge(m.id)}><X size={16} /></Ib></motion.div>)}</AnimatePresence></div> : <Empty title="Trash is empty" hint="Items you delete show up here so you can restore them." />}</div>);
 }
 
 function SettingsView({ d, commit, setTheme, toast }: any) {
   const file = useRef<HTMLInputElement>(null);
   const exp = () => { const b = new Blob([JSON.stringify(d, null, 2)], { type: "application/json" }); const u = URL.createObjectURL(b); const l = document.createElement("a"); l.href = u; l.download = `trace-backup-${new Date().toISOString().slice(0, 10)}.json`; l.click(); URL.revokeObjectURL(u); };
   const imp = async (f?: File) => { if (!f) return; try { const v = validate(JSON.parse(await f.text())); if (!v) throw 0; commit(() => v); toast(`Imported ${v.memories.length} memories`); } catch { toast("That file isn't a valid TRACE backup"); } if (file.current) file.current.value = ""; };
-  const row = "flex flex-wrap items-center justify-between gap-2 rounded-xl border border-line bg-panel p-4";
+  const row = "flex flex-wrap items-center justify-between gap-2 rounded-sm border border-line bg-panel p-4";
   return (<div className="mx-auto grid max-w-2xl gap-3"><H>Settings</H>
     <div className={row}><span>Theme</span><div className="flex gap-2">{(["dark", "light"] as const).map((t) => <button key={t} onClick={() => setTheme(t)} className={`rounded-lg border px-3 py-1 text-sm ${d.prefs.theme === t ? "border-acc text-fg" : "border-line text-mute"}`}>{t}</button>)}</div></div>
     <div className={row}><span>Default library view</span><div className="flex gap-2">{(["grid", "list"] as const).map((t) => <button key={t} onClick={() => commit((x: Data) => ({ ...x, prefs: { ...x.prefs, view: t } }))} className={`rounded-lg border px-3 py-1 text-sm ${d.prefs.view === t ? "border-acc text-fg" : "border-line text-mute"}`}>{t}</button>)}</div></div>
@@ -237,7 +246,7 @@ function Capture({ item, d, live, onClose, onSave, a }: any) {
   };
   const rel = item ? related(item, live).slice(0, 4) : [];
   return (<motion.div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-    <motion.div role="dialog" aria-modal="true" aria-label={item ? "Edit memory" : "Quick capture"} className="max-h-[92vh] w-full max-w-lg overflow-auto rounded-t-3xl border border-line bg-panel p-5 sm:rounded-2xl" initial={{ opacity: 0, y: 24, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 16, scale: 0.98 }} transition={{ duration: 0.18 }}>
+    <motion.div role="dialog" aria-modal="true" aria-label={item ? "Edit memory" : "Quick capture"} className="max-h-[92vh] w-full max-w-lg overflow-auto rounded-t-3xl border border-line bg-panel p-5 sm:rounded-sm" initial={{ opacity: 0, y: 24, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 16, scale: 0.98 }} transition={{ duration: 0.18 }}>
       <div className="mb-3 flex items-center justify-between"><h2 className="font-display text-xl">{item ? "Edit memory" : "Capture"}</h2><Ib label="Close" onClick={onClose}><X size={18} /></Ib></div>
       <div className="mb-3 flex flex-wrap gap-1" role="tablist">{TYPES.map((t) => <button key={t.id} role="tab" aria-selected={type === t.id} onClick={() => setType(t.id)} className={`relative flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm ${type === t.id ? "text-fg" : "text-mute"}`}>{type === t.id && <motion.span layoutId="tab" className="absolute inset-0 rounded-lg bg-raised" />}<t.icon size={14} className="relative" /><span className="relative">{t.label}</span></button>)}</div>
       <div className="grid gap-2">
@@ -250,7 +259,7 @@ function Capture({ item, d, live, onClose, onSave, a }: any) {
         <div className="flex items-center gap-2"><select aria-label="Collection" className="field" value={cid} onChange={(e) => setCid(e.target.value)}><option value="">No collection</option>{d.collections.map((c: Collection) => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
           <button aria-pressed={fav} aria-label="Favourite" onClick={() => setFav(!fav)} className="rounded-lg border border-line p-2.5"><Star size={16} className={fav ? "fill-acc text-acc" : "text-mute"} /></button></div>
         {err && <p role="alert" className="text-sm text-red-400">{err}</p>}
-        <motion.button {...tap} whileHover={{ y: -1 }} disabled={busy} onClick={submit} className="mt-1 rounded-xl bg-acc py-2.5 font-medium text-ink disabled:opacity-50">{busy ? "Saving…" : item ? "Save changes" : "Save memory"}</motion.button></div>
+        <motion.button {...tap} whileHover={{ y: -1 }} disabled={busy} onClick={submit} className="mt-1 rounded-sm bg-acc py-2.5 font-medium text-ink disabled:opacity-50">{busy ? "Saving…" : item ? "Save changes" : "Save memory"}</motion.button></div>
       {item && <div className="mt-5 border-t border-line pt-3"><h3 className="mb-2 text-sm text-mute">Related memories</h3>{rel.length ? rel.map((r) => <button key={r.m.id} onClick={() => a.open(r.m)} className="mb-1 block w-full rounded-lg p-2 text-left hover:bg-raised"><span className="text-sm">{r.m.title}</span><span className="block text-xs text-mute">{r.why.join(" ")}</span></button>) : <p className="text-sm text-mute">Nothing related yet. Shared tags, collections, or title words will link items.</p>}
         <p className="mt-2 text-xs text-mute">Created {new Date(item.created).toLocaleString()} · Edited {new Date(item.updated).toLocaleString()}{item.url && <> · <a className="text-acc underline" href={item.url} target="_blank" rel="noopener noreferrer">Open link</a></>}</p></div>}
     </motion.div></motion.div>);
@@ -259,7 +268,7 @@ function Capture({ item, d, live, onClose, onSave, a }: any) {
 function Onboarding({ done }: { done: () => void }) {
   const [i, setI] = useState(0);
   const S = [["A memory layer for the internet", "Save links, notes, quotes, and code. Find them later. Connect the dots."], ["Capture in seconds", "Press N anywhere, or paste a link into the overview box."], ["Organize with collections and tags", "Shared tags and collections are what draw the lines in your graph."], ["Search and explore", "Press Ctrl/Cmd K to search. Open the knowledge graph to see how ideas connect."]];
-  return (<motion.div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }}><div role="dialog" aria-label="Welcome to TRACE" className="w-full max-w-md rounded-2xl border border-line bg-panel p-6 text-center"><div className="mb-3 flex justify-center"><Logo /></div>
+  return (<motion.div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }}><div role="dialog" aria-label="Welcome to TRACE" className="w-full max-w-md rounded-sm border border-line bg-panel p-6 text-center"><div className="mb-3 flex justify-center"><Logo /></div>
     <AnimatePresence mode="wait"><motion.div key={i} initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }} transition={{ duration: 0.15 }}><h2 className="font-display text-2xl">{S[i][0]}</h2><p className="mt-2 text-mute">{S[i][1]}</p></motion.div></AnimatePresence>
-    <div className="mt-6 flex items-center justify-between"><button onClick={done} className="text-sm text-mute">Skip</button><motion.button {...tap} onClick={() => (i < 3 ? setI(i + 1) : done())} className="rounded-xl bg-acc px-5 py-2 font-medium text-ink">{i < 3 ? "Next" : "Start using TRACE"}</motion.button></div></div></motion.div>);
+    <div className="mt-6 flex items-center justify-between"><button onClick={done} className="text-sm text-mute">Skip</button><motion.button {...tap} onClick={() => (i < 3 ? setI(i + 1) : done())} className="rounded-sm bg-acc px-5 py-2 font-medium text-ink">{i < 3 ? "Next" : "Start using TRACE"}</motion.button></div></div></motion.div>);
 }
